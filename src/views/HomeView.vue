@@ -17,7 +17,14 @@ const submittedCards = ref([])
 const submitForm = () => {
   validateName(true)
   validatePassword(true)
-  if (!errors.value.username && !errors.value.password) {
+  validateReason(true)
+  validateConfirmPassword(true)
+  if (
+    !errors.value.username &&
+    !errors.value.password &&
+    !errors.value.reason &&
+    !errors.value.confirmPassword
+  ) {
     submittedCards.value.push({ ...formData.value })
     clearForm()
   }
@@ -36,11 +43,31 @@ const errors = ref({
   reason: null
 })
 
+const success = ref({
+  reason: null
+})
+
 const validateName = (blur) => {
   if (formData.value.username.length < 3) {
     if (blur) errors.value.username = 'Name must be at least 3 characters'
   } else {
     errors.value.username = null
+  }
+}
+
+const validateReason = (blur) => {
+  if (formData.value.reason.length < 10) {
+    success.value.reason = null
+    if (blur) {
+      errors.value.reason = 'Reason must be at least 10 characters'
+    }
+  } else {
+    errors.value.reason = null
+    if (formData.value.reason.toLowerCase().includes('friend')) {
+      success.value.reason = 'Great to have a friend!'
+    } else {
+      success.value.reason = null
+    }
   }
 }
 
@@ -158,7 +185,15 @@ const validateConfirmPassword = (blur) => {
               id="reason"
               rows="3"
               v-model="formData.reason"
+              @blur="() => validateReason(true)"
+              @input="() => validateReason(false)"
             ></textarea>
+            <div v-if="errors.reason" class="text-danger">
+              {{ errors.reason }}
+            </div>
+            <div v-if="success.reason" class="text-success">
+              {{ success.reason }}
+            </div>
           </div>
           <div class="text-center">
             <button type="submit" class="btn btn-primary me-2">Submit</button>
